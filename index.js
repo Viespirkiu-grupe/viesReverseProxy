@@ -82,7 +82,6 @@ app.get(["/:id", "/:dokId/:fileId"], async (req, res) => {
         const stream = Readable.from(fileRes.body);
 
         stream.on("error", (err) => {
-            console.error("Stream error:", err);
             res.destroy(err);
         });
 
