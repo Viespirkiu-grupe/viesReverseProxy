@@ -40,9 +40,13 @@ app.get(["/:id", "/:dokId/:fileId"], async (req, res) => {
         const info = await infoRes.json();
 
         // Step 2: Request actual file (streaming, no buffering)
+        const controller = new AbortController();
         const fileRes = await fetch(info.fileUrl, {
             headers: info.headers || {},
+            signal: controller.signal,
         });
+
+        req.on("close", () => controller.abort());
 
         if (!fileRes.ok) {
             res.status(fileRes.status);
@@ -69,10 +73,6 @@ app.get(["/:id", "/:dokId/:fileId"], async (req, res) => {
         stream.on("error", (err) => {
             console.error("Stream error:", err);
             res.destroy(err);
-        });
-
-        req.on("close", () => {
-            if (fileRes.body?.cancel) fileRes.body.cancel();
         });
 
         stream.pipe(res);
