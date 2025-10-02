@@ -71,6 +71,10 @@ app.get(["/:id", "/:dokId/:fileId"], async (req, res) => {
             res.destroy(err);
         });
 
+        req.on("close", () => {
+            if (fileRes.body?.cancel) fileRes.body.cancel();
+        });
+
         stream.pipe(res);
     } catch (err) {
         console.error("Proxy error:", err);
