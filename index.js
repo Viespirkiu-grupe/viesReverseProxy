@@ -46,7 +46,18 @@ app.get(["/:id", "/:dokId/:fileId"], async (req, res) => {
             signal: controller.signal,
         });
 
-        req.on("close", () => controller.abort());
+        let finished = false;
+
+        res.on("finish", () => {
+            finished = true;
+        });
+
+        req.on("close", () => {
+            if (!finished) {
+                // Only abort if the client disconnected prematurely
+                controller.abort();
+            }
+        });
 
         if (!fileRes.ok) {
             res.status(fileRes.status);
